@@ -3,15 +3,10 @@ import { ColorValue, TextInputProps, TextStyle, ViewStyle } from "react-native";
 export interface OtpInputProps extends TextInputProps {
   value: string;
   numberOfDigits: number;
-  autoFocus?: boolean;
   focusColor?: ColorValue;
   onTextChange?: (text: string) => void;
-  // onFilled?: (text: string) => void;
-  hideStick?: boolean;
-  focusStickBlinkingDuration?: number;
-  secureTextEntry?: boolean;
   theme?: Theme;
-  // handlePress: () => void;
+  secureTextEntry: boolean;
   isFocused: boolean;
   markFocused: () => void;
   markBlurred: () => void;
@@ -28,6 +23,5 @@ export interface Theme {
   pinCodeContainerStyle?: ViewStyle;
   filledPinCodeContainerStyle?: ViewStyle;
   pinCodeTextStyle?: TextStyle;
-  focusStickStyle?: ViewStyle;
   focusedPinCodeContainerStyle?: ViewStyle;
 }

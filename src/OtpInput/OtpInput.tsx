@@ -2,17 +2,13 @@ import { forwardRef, useImperativeHandle, useRef } from "react";
 import { Keyboard, Pressable, Text, TextInput, View } from "react-native";
 import { styles } from "./OtpInput.styles";
 import { OtpInputProps, OtpInputRef } from "./OtpInput.types";
-import { VerticalStick } from "./VerticalStick";
 
 export const OtpInput = forwardRef<OtpInputRef, OtpInputProps>((props, ref) => {
   const {
     value,
     numberOfDigits,
-    autoFocus = true,
-    hideStick,
     focusColor = "#A4D0A4",
-    focusStickBlinkingDuration,
-    secureTextEntry = false,
+    secureTextEntry,
     theme = {},
     isFocused,
     markBlurred,
@@ -24,7 +20,6 @@ export const OtpInput = forwardRef<OtpInputRef, OtpInputProps>((props, ref) => {
     inputsContainerStyle,
     pinCodeContainerStyle,
     pinCodeTextStyle,
-    focusStickStyle,
     focusedPinCodeContainerStyle,
     filledPinCodeContainerStyle,
   } = theme;
@@ -73,19 +68,10 @@ export const OtpInput = forwardRef<OtpInputRef, OtpInputProps>((props, ref) => {
                     : {},
                   filledPinCodeContainerStyle && Boolean(char) ? filledPinCodeContainerStyle : {},
                 ]}
-                testID="otp-input"
               >
-                {isFocusedInput && !hideStick ? (
-                  <VerticalStick
-                    focusColor={focusColor}
-                    style={focusStickStyle}
-                    focusStickBlinkingDuration={focusStickBlinkingDuration}
-                  />
-                ) : (
-                  <Text style={[styles.codeText, pinCodeTextStyle]}>
-                    {char && secureTextEntry ? "•" : char}
-                  </Text>
-                )}
+                <Text style={[styles.codeText, pinCodeTextStyle]}>
+                  {char && secureTextEntry ? "•" : char}
+                </Text>
               </Pressable>
             );
           })}
@@ -98,11 +84,9 @@ export const OtpInput = forwardRef<OtpInputRef, OtpInputProps>((props, ref) => {
         onChangeText={onChangeText}
         maxLength={numberOfDigits}
         inputMode="numeric"
-        autoFocus={autoFocus}
         style={styles.hiddenInput}
-        secureTextEntry={secureTextEntry}
-        // textContentType="oneTimeCode"
-        // autoComplete="one-time-code"
+        textContentType="oneTimeCode"
+        autoComplete="one-time-code"
         {...otherProps}
       />
     </>
