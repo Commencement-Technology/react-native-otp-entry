@@ -1,17 +1,12 @@
-import { forwardRef, useImperativeHandle } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { forwardRef, useImperativeHandle, useRef } from "react";
+import { Keyboard, Pressable, Text, TextInput, View } from "react-native";
 import { styles } from "./OtpInput.styles";
 import { OtpInputProps, OtpInputRef } from "./OtpInput.types";
 import { VerticalStick } from "./VerticalStick";
-import { useOtpInput } from "./useOtpInput";
 
 export const OtpInput = forwardRef<OtpInputRef, OtpInputProps>((props, ref) => {
   const {
-    models: { text, inputRef, focusedInputIndex },
-    actions: { clear, handlePress, handleTextChange, focus },
-    forms: { setTextWithRef },
-  } = useOtpInput(props);
-  const {
+    value,
     numberOfDigits,
     autoFocus = true,
     hideStick,
@@ -19,9 +14,13 @@ export const OtpInput = forwardRef<OtpInputRef, OtpInputProps>((props, ref) => {
     focusStickBlinkingDuration,
     secureTextEntry = false,
     theme = {},
+    isFocused,
+    markBlurred,
+    markFocused,
+    onChangeText,
+    ...otherProps
   } = props;
   const {
-    containerStyle,
     inputsContainerStyle,
     pinCodeContainerStyle,
     pinCodeTextStyle,
@@ -30,16 +29,36 @@ export const OtpInput = forwardRef<OtpInputRef, OtpInputProps>((props, ref) => {
     filledPinCodeContainerStyle,
   } = theme;
 
-  useImperativeHandle(ref, () => ({ clear, focus, setValue: setTextWithRef }));
+  const inputRef = useRef<TextInput>(null);
+  const handlePress = () => {
+    // To fix bug when keyboard is not popping up after being dismissed
+    if (!Keyboard.isVisible()) {
+      Keyboard.dismiss();
+    }
+    inputRef.current?.focus();
+  };
+
+  useImperativeHandle(ref, () => ({
+    focus: () => {
+      inputRef.current?.focus();
+    },
+    blur: () => {
+      inputRef.current?.blur();
+    },
+    clear: () => {
+      inputRef.current?.clear();
+    },
+  }));
 
   return (
-    <View style={[styles.container, containerStyle]}>
+    <>
       <View style={[styles.inputsContainer, inputsContainerStyle]}>
         {Array(numberOfDigits)
           .fill(0)
           .map((_, index) => {
-            const char = text[index];
-            const isFocusedInput = index === focusedInputIndex;
+            const char = value[index];
+            const isLastInput = index === numberOfDigits - 1 && value.length === numberOfDigits;
+            const isFocusedInput = isFocused && (index === value.length || isLastInput);
 
             return (
               <Pressable
@@ -50,11 +69,9 @@ export const OtpInput = forwardRef<OtpInputRef, OtpInputProps>((props, ref) => {
                   pinCodeContainerStyle,
                   focusColor && isFocusedInput ? { borderColor: focusColor } : {},
                   focusedPinCodeContainerStyle && isFocusedInput
-                    ? { ...focusedPinCodeContainerStyle }
+                    ? focusedPinCodeContainerStyle
                     : {},
-                  filledPinCodeContainerStyle && Boolean(char)
-                    ? { ...filledPinCodeContainerStyle }
-                    : {},
+                  filledPinCodeContainerStyle && Boolean(char) ? filledPinCodeContainerStyle : {},
                 ]}
                 testID="otp-input"
               >
@@ -74,18 +91,20 @@ export const OtpInput = forwardRef<OtpInputRef, OtpInputProps>((props, ref) => {
           })}
       </View>
       <TextInput
-        value={text}
-        onChangeText={handleTextChange}
+        ref={inputRef}
+        value={value}
+        onBlur={markBlurred}
+        onFocus={markFocused}
+        onChangeText={onChangeText}
         maxLength={numberOfDigits}
         inputMode="numeric"
-        textContentType="oneTimeCode"
-        ref={inputRef}
         autoFocus={autoFocus}
         style={styles.hiddenInput}
         secureTextEntry={secureTextEntry}
-        autoComplete="one-time-code"
-        testID="otp-input-hidden"
+        // textContentType="oneTimeCode"
+        // autoComplete="one-time-code"
+        {...otherProps}
       />
-    </View>
+    </>
   );
 });
